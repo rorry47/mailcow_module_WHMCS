@@ -134,9 +134,6 @@ class MailcowAPI{
     else{
       return $result;
     }
-       error_log("URL: " . $this->baseurl . $uri);
-    error_log("Request Data: " . json_encode($data));
-    error_log("Result: " . json_encode($result));      
   }
   
   
@@ -242,11 +239,6 @@ class MailcowAPI{
     catch (Exception $e) {
       return $e->getMessage();
     }
-
-    error_log("URL: " . $this->baseurl . $uri);
-    error_log("Request Data: " . json_encode($data));
-    error_log("Result: " . json_encode($result));     
-
     return $result;
     
   }
