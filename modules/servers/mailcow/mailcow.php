@@ -113,14 +113,14 @@ function mailcow_TerminateAccount(array $params)
 {
     try {
       
-      //Remove Mailboxes
+      //Del MailBoxes
       $mailcow = new MailcowAPI($params);
-      $result = $mailcow->removeAllMailboxes($params['domain']);
-      
-      //Remove Resources
+      $result = $mailcow->removeDomainMailbox($params);
+
+      //Del Aliases
       $mailcow = new MailcowAPI($params);
-      $result = $mailcow->removeAllResources($params['domain']);
-      
+      $result = $mailcow->removeDomainAliases($params);
+
       //Remove Domain
       $mailcow = new MailcowAPI($params);
       $result = $mailcow->removeDomain($params);
@@ -128,6 +128,8 @@ function mailcow_TerminateAccount(array $params)
       //Remove Domain Admin
       $mailcow = new MailcowAPI($params);
       $result = $mailcow->removeDomainAdmin($params);
+      
+
       
     } catch (Exception $e) {
 
@@ -169,36 +171,6 @@ function mailcow_ChangePassword(array $params)
     return 'success';
 }
 
-function mailcow_ChangePackage(array $params)
-{
-    try {
-        
-        $mailcow = new MailcowAPI($params);
-        $result = $mailcow->editDomain($params);
-        
-        logModuleCall(
-            'mailcow',
-            __FUNCTION__,
-            print_r($params, true),
-            print_r($result, true),
-            null
-        );
-        
-    } catch (Exception $e) {
-        // Record the error in WHMCS's module log.
-        logModuleCall(
-            'mailcow',
-            __FUNCTION__,
-            print_r($params, true),
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-
-        return $e->getMessage();
-    }
-
-    return 'success';
-}
 
 
 function mailcow_TestConnection(array $params)
@@ -228,29 +200,6 @@ function mailcow_TestConnection(array $params)
 
  
 
-function mailcow_AdminLink(array $params)
-{
-    $address = ($params['serverhostname']) ? $params['serverhostname'] : $params['serverip'];
-    $secure = ($params["serversecure"]) ? 'https' : 'http';
-    if (empty($address)) {
-        return '';
-    }
-
-    $form = sprintf(
-        '<form action="%s://%s/index.php" method="post" target="_blank">' .
-        '<input type="hidden" name="login_user" value="%s" />' .
-        '<input type="hidden" name="pass_user" value="%s" />' .
-        '<input type="submit" value="%s">' .
-        '</form>',
-        $secure,
-        Sanitize::encode($address),
-        Sanitize::encode($params["serverusername"]),
-        Sanitize::encode($params["serverpassword"]),
-        'Login to panel'
-    );
-
-    return $form;
-}
 
 /**
  * @param $params
@@ -263,6 +212,60 @@ function mailcow_ClientArea(array $params) {
   if (empty($address)) {
       return '';
   }
+    
+    
+    $ch_dkim = curl_init();
+    curl_setopt($ch_dkim, CURLOPT_URL, "https://$address/api/v1/get/dkim/{$params['domain']}");
+    curl_setopt($ch_dkim, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($ch_dkim, CURLOPT_HEADER, FALSE);
+    curl_setopt($ch_dkim, CURLOPT_HTTPHEADER, array(
+            "Content-Type: application/json",
+            "X-API-Key: {$params['serveraccesshash']}",
+    ));
+    
+    $response_dkim = curl_exec($ch_dkim);
+    
+    curl_close($ch_dkim);
+    
+    $data_dkim = json_decode($response_dkim, true);
+    
+    
+    if (empty($response_dkim)) {
+        
+    $dkim = '<form method="POST"><input type="submit" name="gen_dkim" value="Add"></form>';
+    
+    if (isset($_POST['gen_dkim'])){
+        
+        $ch_dkim_add = curl_init();
+        curl_setopt($ch_dkim_add, CURLOPT_URL, "https://$address/api/v1/add/dkim");
+        curl_setopt($ch_dkim_add, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch_dkim_add, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch_dkim_add, CURLOPT_POST, TRUE);
+        curl_setopt($ch_dkim_add, CURLOPT_POSTFIELDS, "{
+          \"domains\": \"{$params['domain']}\",
+          \"dkim_selector\": \"dkim\",
+          \"key_size\": \"2048\"
+        }");
+        curl_setopt($ch_dkim_add, CURLOPT_HTTPHEADER, array(
+                "Content-Type: application/json",
+                "X-API-Key: {$params['serveraccesshash']}",
+        ));
+        $response_dkim = curl_exec($ch_dkim_add);
+        
+        curl_close($ch_dkim_add);
+        
+        header("Location: " . $_SERVER['REQUEST_URI']);
+    }
+    
+    } else {
+        
+        $dkim = $data_dkim['dkim_txt'];
+        
+    }
+
+
+
+
 
   $form = sprintf(
       '<div class="row">
@@ -291,84 +294,63 @@ function mailcow_ClientArea(array $params) {
 <a href="https://' . $address . '" target="_blank">' . $address . '</a>
 </div>
 </div>
+<hr> 
+
+<div class="row">
+<center>
+<strong>DNS Records</strong>
+</center>
+<br>
+</div>
+
+<div class="row">
+<div class="col-sm-5 text-right">
+<strong>mail.' . $params['domain'] . ' (A):</strong>
+</div>
+<div class="col-sm-7 text-left">
+<pre>' . $params['serverip'] . '</pre>
+</div>
+</div>
+
+<div class="row">
+<div class="col-sm-5 text-right">
+<strong>dkim._domainkey.' . $params['domain'] . ' (TXT):</strong>
+</div>
+<div class="col-sm-7 text-left">
+<pre>' . $dkim . '</pre>
+</div>
+</div>
+
+<div class="row">
+<div class="col-sm-5 text-right">
+<strong>' . $params['domain'] . ' (MX):</strong>
+</div>
+<div class="col-sm-7 text-left">
+<pre>mail.' . $params['domain'] . '</pre>
+</div>
+</div>
+
+
+<div class="row">
+<div class="col-sm-5 text-right">
+<strong>_dmarc.' . $params['domain'] . ' (TXT):</strong>
+</div>
+<div class="col-sm-7 text-left">
+<pre>v=DMARC1;p=none</pre>
+</div>
+</div>
+
+<div class="row">
+<div class="col-sm-5 text-right">
+<strong>' . $params['domain'] . ' (TXT):</strong>
+</div>
+<div class="col-sm-7 text-left">
+<pre>v=spf1 a mx -all</pre>
+</div>
+</div>
 '
   );
 
   return $form;
     
-}
-
-/**
- * Admin Area Client Login link
- */
-function mailcow_LoginLink(array $params){ /** Not working Need to use JS to submit form **/
-/*
-  return "<a href='https://{$params['serverhostname']}/index.php?login_user={$params['username']}&pass_user={$params['password']}' 
-    class='btn btn-primary' 
-    target='_blank'>
-    <i class='fa fa-login'></i> Login as User</a>";
-*/
-}
-
-
-/**
- * @param $params
- * @return string
- */
-function mailcow_UsageUpdate($params) {
-
-    $query = Capsule::table('tblhosting')
-        ->where('server', $params["serverid"]);
-
-    $domains = array();
-    /** @var stdClass $hosting */
-    foreach ($query->get() as $hosting) {
-        $domains[] = $hosting->domain;
-    }
-    
-    try {
-      
-      $mailcow = new MailcowAPI($params);
-      $domainsUsage = $mailcow->getUsageStats($domains);
-      
-      logModuleCall(
-          'mailcow',
-          __FUNCTION__,
-          $params,
-          print_r($domainsUsage, true),
-          null
-      );
-      
-    } catch (Exception $e) {
-        // Record the error in WHMCS's module log.
-        logModuleCall(
-            'mailcow',
-            __FUNCTION__,
-            $params,
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-
-        return $e->getMessage();
-    }
-    
-    //logActivity(print_r($domainsUsage, true)); ////DEBUG
-    
-    foreach ( $domainsUsage as $domainName => $usage ) {
-
-        Capsule::table('tblhosting')
-            ->where('server', $params["serverid"])
-            ->where('domain', $domainName)
-            ->update(
-                array(
-                    "diskusage" => $usage['diskusage'],
-                    "disklimit" => $usage['disklimit'],
-                    //"bwusage" => $usage['bwusage'],
-                    //"bwlimit" => $usage['bwlimit'],
-                    "lastupdate" => Capsule::table('tblhosting')->raw('now()'),
-                )
-            );
-    }
-
-    return 'success';
 }
