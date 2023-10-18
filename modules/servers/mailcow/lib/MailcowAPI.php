@@ -198,7 +198,6 @@ class MailcowAPI{
   }
   
   
-  
     public function removeDomainMailbox($params){
         return $this->_removeMailboxes($params['domain'], $params['username'], null, 'remove');
     }
