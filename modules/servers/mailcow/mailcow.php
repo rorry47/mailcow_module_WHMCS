@@ -230,7 +230,7 @@ function mailcow_ClientArea(array $params) {
     $data_dkim = json_decode($response_dkim, true);
     
     
-    if (empty($response_dkim)) {
+    if (empty($data_dkim['dkim_txt'])) {
         
     $dkim = '<form method="POST"><input type="submit" name="gen_dkim" value="Add"></form>';
     
