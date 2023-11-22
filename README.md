@@ -4,6 +4,9 @@ A WHMCS module to automatically integrate with MailCow servers for new API MailC
 The module is installed in the folder `modules/servers/`. 
 
 ---
+**Update 22.11.2023:**
+1. Fixed a bug where all mailboxes were deleted when deleting account again.
+
 **Update 20.10.2023:**
 1. Mail account creation settings are moved to a separate file
 2. All the necessary files are in one directory.
