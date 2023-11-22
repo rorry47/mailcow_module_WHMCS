@@ -109,8 +109,13 @@ function mailcow_UnsuspendAccount(array $params)
     return 'success';
 }
 
+
 function mailcow_TerminateAccount(array $params)
 {
+    
+    if ($params['status'] == "Terminated") {
+        return 'Account has already been deleted!';
+    } else {
     try {
       
       //Del MailBoxes
@@ -135,9 +140,10 @@ function mailcow_TerminateAccount(array $params)
 
         return $e->getMessage();
     }
-
     return 'success';
+    }
 }
+
 
  
 function mailcow_ChangePassword(array $params)
