@@ -213,6 +213,11 @@ The database and existing services are not affected. Active domains in Mailcow w
 - Check the module log for errors
 - Confirm the domain is active in Mailcow before generating DKIM
 
+**An account is not created on the MailCow side.**
+
+- You must request a domain in the product settings when ordering.
+- The API key on MailCow is set to read-only permissions. Write permissions must also be granted.
+
 ---
 
 ## File structure
