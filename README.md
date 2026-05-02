@@ -1,7 +1,7 @@
 # mailcow Module for WHMCS
 
 
-<img src="https://github.com/rorry47/mailcow_module_WHMCS/blob/main/screenshot.jpg">
+<img src="https://github.com/rorry47/mailcow_module_WHMCS/blob/main/screenshot_module.jpg">
 
 WHMCS provisioning module for [Mailcow](https://mailcow.email/) — automates creation, suspension, termination and password changes for email domains.
 
