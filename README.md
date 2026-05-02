@@ -1,4 +1,4 @@
-# mailcow Module for WHMCS
+# mailcow Module for WHMCS v2.0
 
 
 <img src="https://github.com/rorry47/mailcow_module_WHMCS/blob/main/screenshot_module.jpg">
