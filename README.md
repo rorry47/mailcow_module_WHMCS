@@ -53,7 +53,7 @@ WHMCS order terminated
 
 | Component | Version |
 |---|---|
-| WHMCS | 7.x or 8.x |
+| WHMCS | 7.x \ 8.x \ 9.x |
 | PHP | 7.4 or higher |
 | PHP extensions | `curl`, `json` |
 | Mailcow | any recent version with REST API enabled |
