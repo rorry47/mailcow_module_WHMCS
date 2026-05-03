@@ -1,9 +1,16 @@
-# mailcow Module for WHMCS v2.0
+# mailcow Module for WHMCS v2.1
 
-
-<img src="https://github.com/rorry47/mailcow_module_WHMCS/blob/main/screenshot_module.jpg">
+<img src="https://github.com/rorry47/mailcow_module_WHMCS/blob/main/image_module.jpg">
 
 WHMCS provisioning module for [Mailcow](https://mailcow.email/) — automates creation, suspension, termination and password changes for email domains.
+---
+
+## What's new in v2.1
+ 
+- Added **Statistics tab** — shows storage used/free/total, mailbox count, available slots, and a per-mailbox quota breakdown with progress bars
+- Added **Open Mailcow Panel** button in the client area
+- More DNS records shown
+- Fixed DKIM regeneration — now correctly removes the old key before generating a new one
 
 ---
 
